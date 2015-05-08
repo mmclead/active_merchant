@@ -83,9 +83,15 @@ module ActiveMerchant #:nodoc:
 
       def authorize(money, payment, options={})
         post = {}
+        puts "adding invoice"
         add_invoice(post, money, options)
+        puts post
+        puts "adding payment"
         add_payment(post, payment)
+        puts post
+        puts "adding address"
         add_address(post, payment, options)
+        puts post
 
         commit('auth', post)
       end
@@ -157,6 +163,8 @@ module ActiveMerchant #:nodoc:
         address = options[:billing_address]
         post[:firstname] = creditcard.first_name
         post[:lastname ] = creditcard.last_name
+
+        return if address.nil?
         post[:address1 ] = address[:address1]
         post[:address2 ] = address[:address2]
         post[:city     ] = address[:city]
@@ -173,8 +181,9 @@ module ActiveMerchant #:nodoc:
 
       def add_payment(post, payment)
         post[:ccnumber] = payment.number
-        post[:ccexp   ] = "#{payment.month.to_s.rjust(2,"0")}#{payment.year.to_s[-2..-1]}"
+        post[:ccexp   ] = "#{payment.month.to_s.rjust(2,"0")}/#{payment.year}"
         post[:cvv     ] = payment.verification_value
+        post[:payment ] = 'creditcard'
       end
 
       def parse(body)
